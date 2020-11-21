@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import time
 import math
+import util
 
 
 class LastKMinuteStat:
@@ -24,19 +25,11 @@ class LastKMinuteStat:
         if len(self.list) > 0:
             sum = math.fabs(self.list[-1][1]-self.list[0][1])
             perSec = sum/self.k.seconds
-        return (self._data_unit_calc(sum, "B"), self._data_unit_calc(perSec, "Bps"))
+        return (util.data_unit_calc(sum, "B"), util.data_unit_calc(perSec, "Bps"))
 
     def getFormattedStat(self):
         (tot, totps) = self.getStat()
         return "%s\n%s" % (tot, totps)
-
-    def _data_unit_calc(self, bytes: float, unit):
-        units = ["", "K", "M", "G"]
-        unitInd = 0
-        while bytes >= 1024:
-            bytes /= 1024
-            unitInd += 1
-        return ("%6.2f %s%s") % (bytes, units[unitInd], unit)
 
     def clear(self):
         self.list.clear()
