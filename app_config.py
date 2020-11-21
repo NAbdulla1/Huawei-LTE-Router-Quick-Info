@@ -46,7 +46,7 @@ class AppConfig:
 
     def _readConf(self):
         self._createIfNotExists()
-        with open('conf.json', 'r') as conf:
+        with open(self.conf_file, 'r') as conf:
             return json.load(conf)
 
     def _createIfNotExists(self):
