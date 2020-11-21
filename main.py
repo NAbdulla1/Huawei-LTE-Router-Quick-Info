@@ -1,4 +1,4 @@
-from tkinter import Tk, W, E, Checkbutton, Frame, Label, Button, Toplevel
+from tkinter import Tk, W, E, Checkbutton, Frame, Label, Button, DISABLED, NORMAL
 from threading import Thread
 import time
 
@@ -15,7 +15,6 @@ class Application(Frame):
         self.master = master
         self.pack()
         self.api = ApiInitializer('http://admin:qwerty5@192.168.8.1')
-        self.stop_ui_update = False
         self.last1MinuteStat = LastKMinuteStat(1)
         self._initUI()
 
@@ -34,7 +33,7 @@ class Application(Frame):
 
         self.data_conn_status = Checkbutton(
             self, text="Data\nConn", bg=self.color2)
-        self.data_conn_status['command'] = self._toggle_data_connection
+        self.data_conn_status['command'] = self._toggle_data_connection_and_clear_stat
         self.data_conn_status.grid(row=0, column=3)
 
         self.battery_percentage = Label(self, bg=self.color1)
@@ -47,23 +46,28 @@ class Application(Frame):
         self.pack()
 
     def updateUI(self):
-        if self.api.getClient() is None:
-            self.cur_wifi_user_count['text'] = "Wifi\nnot"
-            self.signal_strength['text'] = "Found"
+        if self.isApiNone() or self.api.getClient().monitoring is None:
+            self.last1MinuteStat.clear()
+            self.cur_wifi_user_count['text'] = "No"
+            self.signal_strength['text'] = "Wifi"
             self.data_conn_status.deselect()
+            self.data_conn_status.config(state=DISABLED)
+            self.battery_percentage['text'] = "Battery\nudf%"
             return
 
         status = self.api.getClient().monitoring.status()
+        traffic_stat = self.api.getClient().monitoring.traffic_statistics()
+
         self.cur_wifi_user_count['text'] = "usr\n%2s" % status['CurrentWifiUser']
         self.signal_strength['text'] = self._get_network(
         ) + "\n" + self._get_signal_bars(status['SignalIcon'])
-
-        traffic_stat = self.api.getClient().monitoring.traffic_statistics()
         self.last1MinuteStat.append(
             int(traffic_stat['CurrentUpload']), int(traffic_stat['CurrentDownload']))
         self.last_1_minute_usage['text'] = self.last1MinuteStat.getFormattedStat(
         )
 
+        if self.data_conn_status['state'] == DISABLED:
+            self.data_conn_status.config(state=NORMAL)
         if self._is_data_connected():
             self.data_conn_status.select()
         else:
@@ -73,16 +77,21 @@ class Application(Frame):
             status['BatteryPercent']+"%"
 
     def _is_data_connected(self):
+        if self.isApiNone() or self.api.getClient().dial_up is None:
+            return False
         return self.api.getClient().dial_up.mobile_dataswitch()["dataswitch"] == '1'
 
-    def _toggle_data_connection(self):
+    def _toggle_data_connection_and_clear_stat(self):
+        if self.isApiNone() or self.api.getClient().dial_up is None:
+            self.data_conn_status.deselect()
+            return
         if self._is_data_connected():
             self.api.getClient().dial_up.set_mobile_dataswitch('0')
             self.data_conn_status.deselect()
-            self.last1MinuteStat.list.clear()
         else:
             self.api.getClient().dial_up.set_mobile_dataswitch('1')
             self.data_conn_status.select()
+        self.last1MinuteStat.clear()
 
     def _get_signal_bars(self, num):
         bars = int(num)
@@ -95,6 +104,8 @@ class Application(Frame):
         return sig
 
     def _get_network(self):
+        if self.isApiNone() or self.api.getClient().device is None:
+            return 'X'
         num = self.api.getClient().device.signal()['mode']
         if num is None:
             return 'X'
@@ -109,27 +120,30 @@ class Application(Frame):
         return "#%02x%02x%02x" % (r, g, b)
 
     def regularUIUpdater(self, sleepTime):
-        while not self.stop_ui_update:
+        while True:
             time.sleep(sleepTime)
             self.updateUI()
+
+    def isApiNone(self):
+        return self.api is None or self.api.getClient() is None
 
 
 def main():
     root = Tk()
     root.attributes("-topmost", True)
-    root.attributes("-alpha", 0.70)
+    root.attributes("-alpha", 0.90)
     root.overrideredirect(True)
     app = Application(master=root)
 
-    width = 225
+    width = 235
     height = 40
-
-    updater = Thread(target=app.regularUIUpdater, args=(2,), daemon=True)
-    updater.start()
 
     position = "%dx%d+%d+%d" % (width, height, root.winfo_screenwidth() -
                                 width, root.winfo_screenheight()-height-30)
     root.geometry(position)
+
+    updater = Thread(target=app.regularUIUpdater, args=(1,), daemon=True)
+    updater.start()
 
     WindowMover(root, app.gripBtn)
 
