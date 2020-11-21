@@ -1,42 +1,45 @@
 from tkinter import Tk, W, E, Checkbutton, Frame, Label, Button, DISABLED, NORMAL
 from threading import Thread
+from os import path
 import time
+import json
 
 from api_init import ApiInitializer
 from window_mover import WindowMover
 from minute_stat import LastKMinuteStat
+from app_config import AppConfig
+import util
 
 
 class Application(Frame):
     def __init__(self, master):
-        self.color1 = self._from_rgb(250, 250, 250)
-        self.color2 = self._from_rgb(220, 220, 220)
-        super().__init__(master, bg=self.color1)
+        self.conf = AppConfig()
+        super().__init__(master, bg=self.conf.getColor(1))
         self.master = master
         self.pack()
-        self.api = ApiInitializer('http://admin:qwerty5@192.168.8.1')
-        self.last1MinuteStat = LastKMinuteStat(1)
+        self.api = ApiInitializer(self.conf.getUrl())
+        self.last1MinuteStat = LastKMinuteStat(self.conf.getUpdateInterval())
         self._initUI()
 
     def _initUI(self):
 
-        self.master.title("Quick Router Switch")
+        self.master.title("Quick Huawei Router Switch")
 
-        self.cur_wifi_user_count = Label(self, bg=self.color1)
+        self.cur_wifi_user_count = Label(self, bg=self.conf.getColor(1))
         self.cur_wifi_user_count.grid(row=0, column=0)
 
-        self.signal_strength = Label(self, bg=self.color2)
+        self.signal_strength = Label(self, bg=self.conf.getColor(2))
         self.signal_strength.grid(row=0, column=1)
 
-        self.last_1_minute_usage = Label(self, bg=self.color1)
+        self.last_1_minute_usage = Label(self, bg=self.conf.getColor(1))
         self.last_1_minute_usage.grid(row=0, column=2)
 
         self.data_conn_status = Checkbutton(
-            self, text="Data\nConn", bg=self.color2)
+            self, text="Data\nConn", bg=self.conf.getColor(2))
         self.data_conn_status['command'] = self._toggle_data_connection_and_clear_stat
         self.data_conn_status.grid(row=0, column=3)
 
-        self.battery_percentage = Label(self, bg=self.color1)
+        self.battery_percentage = Label(self, bg=self.conf.getColor(1))
         self.battery_percentage.grid(row=0, column=4)
 
         self.gripBtn = Button(self, bitmap="gray25")
@@ -52,7 +55,7 @@ class Application(Frame):
             self.signal_strength['text'] = "Wifi"
             self.data_conn_status.deselect()
             self.data_conn_status.config(state=DISABLED)
-            self.battery_percentage['text'] = "Battery\nudf%"
+            self.battery_percentage['text'] = "Battery\nundef%"
             return
 
         status = self.api.getClient().monitoring.status()
@@ -60,7 +63,7 @@ class Application(Frame):
 
         self.cur_wifi_user_count['text'] = "usr\n%2s" % status['CurrentWifiUser']
         self.signal_strength['text'] = self._get_network(
-        ) + "\n" + self._get_signal_bars(status['SignalIcon'])
+        ) + "\n" + util.get_signal_bars(int(status['SignalIcon']))
         self.last1MinuteStat.append(
             int(traffic_stat['CurrentUpload']), int(traffic_stat['CurrentDownload']))
         self.last_1_minute_usage['text'] = self.last1MinuteStat.getFormattedStat(
@@ -93,16 +96,6 @@ class Application(Frame):
             self.data_conn_status.select()
         self.last1MinuteStat.clear()
 
-    def _get_signal_bars(self, num):
-        bars = int(num)
-        sig = ""
-        for i in range(0, 5):
-            if i < bars:
-                sig += "|"
-            else:
-                sig += "."
-        return sig
-
     def _get_network(self):
         if self.isApiNone() or self.api.getClient().device is None:
             return 'X'
@@ -115,9 +108,6 @@ class Application(Frame):
             return "3G"
         else:
             return "4G"
-
-    def _from_rgb(self, r, g, b):
-        return "#%02x%02x%02x" % (r, g, b)
 
     def regularUIUpdater(self, sleepTime):
         while True:
