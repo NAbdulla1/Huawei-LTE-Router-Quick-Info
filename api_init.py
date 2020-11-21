@@ -18,7 +18,7 @@ class ApiInitializer:
 
     def getNewClient(self):
         try:
-            connection = AuthorizedConnection(self.url)
+            connection = AuthorizedConnection(self.url, timeout=2)
             self.client = Client(connection)
         except:
             self.client = None
