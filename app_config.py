@@ -12,7 +12,7 @@ class AppConfig:
                                 "router-ip": "192.168.8.1",
                                 "admin": {
                                     "username": "admin",
-                                    "password": "qwerty5"
+                                    "password": "admin"
                                 },
                                 "update-interval": 1,
                                 "color1": {
