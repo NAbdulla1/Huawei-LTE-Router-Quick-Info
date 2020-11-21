@@ -22,7 +22,7 @@ class AppConfig:
                                 },
                                 "color2": {
                                     "r": 220,
-                                    "g": 0,
+                                    "g": 220,
                                     "b": 220
                                 }
                             }
