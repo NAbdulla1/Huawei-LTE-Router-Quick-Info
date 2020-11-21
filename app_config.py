@@ -51,7 +51,7 @@ class AppConfig:
 
     def _createIfNotExists(self):
         if not os.path.exists(self.conf_file):
-            print("creating '{self.conf_file}' file")
+            print(f"creating '{self.conf_file}' file")
             tmp = open(self.conf_file, 'w+')
             tmp.write(self.default_conf)
             tmp.flush()
