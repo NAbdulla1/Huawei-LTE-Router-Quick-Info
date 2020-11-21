@@ -1,7 +1,6 @@
 # Huawei LTE Router Quick Info
 
-UI Overview:
-![GUI overview](https://github.com/NAbdulla1/Huawei-LTE-Router-Quick-Info/blob/main/router%20controller%20ui.png?raw=true)
+![GUI overview](https://github.com/NAbdulla1/Huawei-LTE-Router-Quick-Info/blob/main/router%20controller%20ui.png?raw=true "UI Overview")
 
 Create a file named `conf.json` in the root directory or  and populate it with following information (if the file is not created, a file will be created automatically with default values, then you need to edit that file):
 ```
