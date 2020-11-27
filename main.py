@@ -35,8 +35,9 @@ class Application(Frame):
         self.last_1_minute_usage.grid(row=0, column=2)
 
         self.data_conn_status = Checkbutton(
-            self, text="Data\nConn", bg=self.conf.getColor(2))
-        self.data_conn_status['command'] = self._toggle_data_connection_and_clear_stat
+            self, text="Data\nConn", bg=self.conf.getColor(2)
+        )
+        self.data_conn_status["command"] = self._toggle_data_connection_and_clear_stat
         self.data_conn_status.grid(row=0, column=3)
 
         self.battery_percentage = Label(self, bg=self.conf.getColor(1))
@@ -46,7 +47,7 @@ class Application(Frame):
         self.gripBtn.grid(row=0, column=5)
 
         self.transparantOnMouseHoverEvent()
-#        self.updateUI()
+        #        self.updateUI()
         self.pack()
 
     def updateUI(self):
@@ -54,48 +55,53 @@ class Application(Frame):
             status = self.api.getClient().monitoring.status()
             traffic_stat = self.api.getClient().monitoring.traffic_statistics()
 
-            self.cur_wifi_user_count['text'] = "usr\n%2s" % status['CurrentWifiUser']
-            self.signal_strength['text'] = self._get_network(
-            ) + "\n" + util.get_signal_bars(int(status['SignalIcon']))
+            self.cur_wifi_user_count["text"] = "usr\n%2s" % status["CurrentWifiUser"]
+            self.signal_strength["text"] = (
+                self._get_network()
+                + "\n"
+                + util.get_signal_bars(int(status["SignalIcon"]))
+            )
 
-            if self.data_conn_status['state'] == DISABLED:
+            if self.data_conn_status["state"] == DISABLED:
                 self.data_conn_status.config(state=NORMAL)
 
             if self._is_data_connected():
                 self.data_conn_status.select()
                 self.last1MinuteStat.append(
-                    int(traffic_stat['CurrentUpload']), int(traffic_stat['CurrentDownload']))
+                    int(traffic_stat["CurrentUpload"]),
+                    int(traffic_stat["CurrentDownload"]),
+                )
             else:
                 self.data_conn_status.deselect()
                 self.last1MinuteStat.append(0, 0)
 
-            self.last_1_minute_usage['text'] = self.last1MinuteStat.getFormattedStat(
-            )
+            self.last_1_minute_usage["text"] = self.last1MinuteStat.getFormattedStat()
 
-            self.battery_percentage['text'] = "Battery\n" + \
-                status['BatteryPercent']+"%"
+            self.battery_percentage["text"] = (
+                "Battery\n" + status["BatteryPercent"] + "%"
+            )
         except:
             self.last1MinuteStat.clear()
-            self.cur_wifi_user_count['text'] = "No"
-            self.signal_strength['text'] = "Wifi"
+            self.cur_wifi_user_count["text"] = "No"
+            self.signal_strength["text"] = "Wifi"
             self.data_conn_status.deselect()
             self.data_conn_status.config(state=DISABLED)
-            self.last_1_minute_usage['text'] = "0.00B\n0.00Bps"
-            self.battery_percentage['text'] = "Battery\nundef%"
+            self.last_1_minute_usage["text"] = "0.00B\n0.00Bps"
+            self.battery_percentage["text"] = "Battery\nundef%"
 
     def _is_data_connected(self):
         try:
-            return self.api.getClient().dial_up.mobile_dataswitch()["dataswitch"] == '1'
+            return self.api.getClient().dial_up.mobile_dataswitch()["dataswitch"] == "1"
         except:
             return False
 
     def _toggle_data_connection_and_clear_stat(self):
         try:
             if self._is_data_connected():
-                self.api.getClient().dial_up.set_mobile_dataswitch('0')
+                self.api.getClient().dial_up.set_mobile_dataswitch("0")
                 self.data_conn_status.deselect()
             else:
-                self.api.getClient().dial_up.set_mobile_dataswitch('1')
+                self.api.getClient().dial_up.set_mobile_dataswitch("1")
                 self.data_conn_status.select()
             self.last1MinuteStat.clear()
         except:
@@ -103,17 +109,17 @@ class Application(Frame):
 
     def _get_network(self):
         try:
-            num = self.api.getClient().device.signal()['mode']
+            num = self.api.getClient().device.signal()["mode"]
             if num is None:
-                return 'X'
-            elif num == '0':
+                return "X"
+            elif num == "0":
                 return "2G"
-            elif num == '2':
+            elif num == "2":
                 return "3G"
             else:
                 return "4G"
         except:
-            return 'X'
+            return "X"
 
     def regularUIUpdater(self):
         while True:
@@ -134,10 +140,10 @@ class Application(Frame):
         self.battery_percentage.bind("<Leave>", self.mouseOut)
 
     def mouseIn(self, event):
-        self.master.attributes('-alpha', .1)
+        self.master.attributes("-alpha", 0.1)
 
     def mouseOut(self, event):
-        self.master.attributes('-alpha', .9)
+        self.master.attributes("-alpha", 0.9)
 
 
 def main():
@@ -150,8 +156,12 @@ def main():
     width = 235
     height = 38
 
-    position = "%dx%d+%d+%d" % (width, height, root.winfo_screenwidth() -
-                                width, root.winfo_screenheight()-height-30)
+    position = "%dx%d+%d+%d" % (
+        width,
+        height,
+        root.winfo_screenwidth() - width,
+        root.winfo_screenheight() - height - 30,
+    )
     root.geometry(position)
 
     WindowMover(root, app.gripBtn)
@@ -162,5 +172,5 @@ def main():
     app.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
