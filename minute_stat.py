@@ -46,7 +46,6 @@ class LastKMinuteStat:
 
     def clear(self):
         with self.lock:
-            print("cleared")
             self.list.clear()
             self.sum = 0
             self.last = -1
