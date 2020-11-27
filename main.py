@@ -31,7 +31,7 @@ class Application(Frame):
         self.signal_strength = Label(self, bg=self.conf.getColor(2))
         self.signal_strength.grid(row=0, column=1)
 
-        self.last_1_minute_usage = Label(self, bg=self.conf.getColor(1))
+        self.last_1_minute_usage = Label(self, bg=self.conf.getColor(2))
         self.last_1_minute_usage.grid(row=0, column=2)
 
         self.data_conn_status = Checkbutton(
@@ -45,6 +45,7 @@ class Application(Frame):
         self.gripBtn = Button(self, bitmap="gray25")
         self.gripBtn.grid(row=0, column=5)
 
+        self.transparantOnMouseHoverEvent()
 #        self.updateUI()
         self.pack()
 
@@ -81,7 +82,6 @@ class Application(Frame):
             self.data_conn_status.config(state=DISABLED)
             self.last_1_minute_usage['text'] = "0.00B\n0.00Bps"
             self.battery_percentage['text'] = "Battery\nundef%"
-
 
     def _is_data_connected(self):
         try:
@@ -123,6 +123,22 @@ class Application(Frame):
     def isApiNone(self):
         return self.api is None or self.api.getClient() is None
 
+    def transparantOnMouseHoverEvent(self):
+        self.cur_wifi_user_count.bind("<Enter>", self.mouseIn)
+        self.cur_wifi_user_count.bind("<Leave>", self.mouseOut)
+        self.last_1_minute_usage.bind("<Enter>", self.mouseIn)
+        self.last_1_minute_usage.bind("<Leave>", self.mouseOut)
+        self.signal_strength.bind("<Enter>", self.mouseIn)
+        self.signal_strength.bind("<Leave>", self.mouseOut)
+        self.battery_percentage.bind("<Enter>", self.mouseIn)
+        self.battery_percentage.bind("<Leave>", self.mouseOut)
+
+    def mouseIn(self, event):
+        self.master.attributes('-alpha', .1)
+
+    def mouseOut(self, event):
+        self.master.attributes('-alpha', .9)
+
 
 def main():
     root = Tk()
@@ -132,7 +148,7 @@ def main():
     app = Application(master=root)
 
     width = 235
-    height = 40
+    height = 38
 
     position = "%dx%d+%d+%d" % (width, height, root.winfo_screenwidth() -
                                 width, root.winfo_screenheight()-height-30)
