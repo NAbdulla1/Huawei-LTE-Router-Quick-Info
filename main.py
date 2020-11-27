@@ -45,7 +45,7 @@ class Application(Frame):
         self.gripBtn = Button(self, bitmap="gray25")
         self.gripBtn.grid(row=0, column=5)
 
-        self.updateUI()
+#        self.updateUI()
         self.pack()
 
     def updateUI(self):
@@ -79,6 +79,7 @@ class Application(Frame):
             self.signal_strength['text'] = "Wifi"
             self.data_conn_status.deselect()
             self.data_conn_status.config(state=DISABLED)
+            self.last_1_minute_usage['text'] = "0.00B\n0.00Bps"
             self.battery_percentage['text'] = "Battery\nundef%"
 
 
@@ -116,8 +117,8 @@ class Application(Frame):
 
     def regularUIUpdater(self):
         while True:
-            time.sleep(self.conf.getUpdateInterval())
             self.updateUI()
+            time.sleep(self.conf.getUpdateInterval())
 
     def isApiNone(self):
         return self.api is None or self.api.getClient() is None
@@ -137,10 +138,10 @@ def main():
                                 width, root.winfo_screenheight()-height-30)
     root.geometry(position)
 
+    WindowMover(root, app.gripBtn)
+
     updater = Thread(target=app.regularUIUpdater, daemon=True)
     updater.start()
-
-    WindowMover(root, app.gripBtn)
 
     app.mainloop()
 
