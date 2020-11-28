@@ -17,9 +17,7 @@ class LastKMinuteStat:
         cur = up + down
         to_add = 0
         if self.last != -1:
-            to_add = max(
-                0, cur - self.last
-            )  # cur can be < self.last if the data connection is disconnected by other device or app
+            to_add = cur - self.last
         self.last = cur
         self.list.append((datetime.now(), to_add))
         self.sum += to_add
