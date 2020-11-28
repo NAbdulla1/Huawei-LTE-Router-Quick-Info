@@ -47,7 +47,6 @@ class Application(Frame):
         self.gripBtn.grid(row=0, column=5)
 
         self.transparantOnMouseHoverEvent()
-        #        self.updateUI()
         self.pack()
 
     def updateUI(self):
@@ -67,14 +66,13 @@ class Application(Frame):
 
             if self._is_data_connected():
                 self.data_conn_status.select()
-                self.last1MinuteStat.append(
-                    int(traffic_stat["CurrentUpload"]),
-                    int(traffic_stat["CurrentDownload"]),
-                )
             else:
                 self.data_conn_status.deselect()
-                self.last1MinuteStat.append(0, 0)
 
+            self.last1MinuteStat.append(
+                int(traffic_stat["TotalUpload"]),
+                int(traffic_stat["TotalDownload"]),
+            )
             self.last_1_minute_usage["text"] = self.last1MinuteStat.getFormattedStat()
 
             self.battery_percentage["text"] = (
@@ -103,7 +101,6 @@ class Application(Frame):
             else:
                 self.api.getClient().dial_up.set_mobile_dataswitch("1")
                 self.data_conn_status.select()
-            self.last1MinuteStat.clear()
         except:
             self.data_conn_status.deselect()
 
